@@ -4,6 +4,7 @@ import argparse
 import binascii
 import re
 from loader import *
+from disassembler import *
 
 __author__     = 'zznop'
 __copyright__  = 'Copyright 2019, zznop'
@@ -50,7 +51,8 @@ def main():
     args = parse_args()
     data = args.file.read()
     context = SMDLoader.load(data)
-    display_header(context)
+    #display_header(context)
+    disassemble_all(context)
 
 if __name__ == '__main__':
     main()
