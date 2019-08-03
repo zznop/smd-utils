@@ -52,7 +52,8 @@ def main():
     data = args.file.read()
     context = SMDLoader.load(data)
     #display_header(context)
-    disassemble_all(context)
+    disas = Disassembler(context)
+    disas.disassemble_all()
 
 if __name__ == '__main__':
     main()
