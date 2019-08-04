@@ -17,8 +17,10 @@ def parse_args():
     Parse command line arguments
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--disassemble', action='store_true',
-        help='Display assembler contents of the executable section')
+    parser.add_argument('-D', '--disassemble-all', action='store_true',
+        help='Display assembler contents of all discovered executable code')
+    parser.add_argument('-d', '--disassemble-at', type=lambda x: int(x,0),
+        help='Display assembler contents beginning at the specified offset')
     parser.add_argument('-x', '--header', action='store_true',
         help='Display the contents of the header')
     parser.add_argument('file', type=argparse.FileType('rb'),
@@ -44,13 +46,18 @@ def cmd_display_header(context):
         print(line)
     print()
 
-def cmd_disassemble(context):
+def cmd_disassemble_all(context):
     """
     Disassemble and display discovered ROM code
     """
     disas = Disassembler(context)
     disas.disassemble_all()
     disas.display()
+
+def cmd_disassemble_at(context, offset):
+    """
+    Disassemble and display code at the specified offset
+    """
 
 def main():
     """
@@ -60,8 +67,8 @@ def main():
     data = args.file.read()
     context = SMDLoader.load(data)
 
-    if args.disassemble:
-        cmd_disassemble(context)
+    if args.disassemble_all:
+        cmd_disassemble_all(context)
         return 0
 
     if args.header:
