@@ -25,7 +25,7 @@ def parse_args():
         help='Path to a SMD ROM file')
     return parser.parse_args()
 
-def display_header(context):
+def cmd_display_header(context):
     """
     Display the ROM header
     """
@@ -34,15 +34,23 @@ def display_header(context):
         line = "  {}".format(name)
         line = line.ljust(24)
         if name == 'SramInfo' or name == 'IOSupport':
-            hexstr = binascii.hexlify(value)
+            hexstr = binascii.hexlify(value).decode()
             hexbytes = re.findall('.{1,2}', hexstr)
             line += '\\x' + '\\x'.join(hexbytes)
-        elif type(value) == str:
+        elif type(value) == bytes:
             line += value.decode('utf-8')
         elif type(value) == int:
             line += hex(value)
         print(line)
-    print
+    print()
+
+def cmd_disassemble(context):
+    """
+    Disassemble and display discovered ROM code
+    """
+    disas = Disassembler(context)
+    disas.disassemble_all()
+    disas.display()
 
 def main():
     """
@@ -51,9 +59,14 @@ def main():
     args = parse_args()
     data = args.file.read()
     context = SMDLoader.load(data)
-    #display_header(context)
-    disas = Disassembler(context)
-    disas.disassemble_all()
+
+    if args.disassemble:
+        cmd_disassemble(context)
+        return 0
+
+    if args.header:
+        cmd_display_header(context)
+        return 0
 
 if __name__ == '__main__':
     main()

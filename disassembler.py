@@ -1,4 +1,6 @@
+from collections import OrderedDict
 from capstone import *
+import binascii
 import re
 
 class Operation(object):
@@ -40,7 +42,13 @@ class Disassembler:
         Push new discovered node to discovered nodes list
         """
         dest_raw = [x.strip() for x in instr.op_str.split(',')][-1]
-        dest = int(dest_raw[1:], 16)
+        if dest_raw[0] == '$':
+            try:
+                dest = int(dest_raw[1:], 16)
+            except ValueError:
+                return
+        else:
+            return
 
         # Already in the discovered node list
         if dest in self.discovered_nodes:
@@ -108,8 +116,28 @@ class Disassembler:
                 self.disassemble_data(dest)
                 _continue = True
 
-        for start in sorted(self.disas_nodes.keys()):
-            print("{}:".format(self.disas_nodes[start]['name']))
-            for instr in self.disas_nodes[start]['instrs']:
-                print("  0x%x:\t%s\t%s" %(instr.address, instr.mnemonic, instr.op_str))
+    def display(self):
+        """
+        Print disassembled code to terminal
+        """
+        ordered_nodes = OrderedDict(sorted(self.disas_nodes.items()))
+        last_node_end = None
+        for start in ordered_nodes:
+            if last_node_end and last_node_end != start:
+                print("{}:\n  ...\n".format(hex(last_node_end)))
+
+            last_node_end = ordered_nodes[start]['end']
+
+            print("{} <{}>:".format(hex(start)[2:].rjust(6, '0'), ordered_nodes[start]['name']))
+            for instr in ordered_nodes[start]['instrs']:
+                print("  {}:\t{}\t{}\t{}".format(
+                    hex(instr.address)[2:].rjust(6, '0'),
+                    binascii.hexlify(instr.bytes).decode().ljust(16, ' '),
+                    instr.mnemonic,
+                    instr.op_str)
+                )
+
             print()
+
+        if last_node_end and last_node_end != self.context['Header']['RomEnd']:
+            print("{}:\n  ...\n".format(hex(last_node_end)[2:].rjust(6, '0')))
