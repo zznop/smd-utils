@@ -4,6 +4,10 @@ import binascii
 import re
 
 class Operation(object):
+    """
+    This class associates disassembling instructions with operations
+    """
+
     def branches():
         """
         Branch instructions
@@ -21,15 +25,22 @@ class Operation(object):
         """
         Return instructions
         """
+
         return ['rtd', 'rte', 'rtr', 'rts']
 
     def exceptions():
         """
         Instructions with exceptional behavior
         """
+
         return ['trap', 'illegal', 'bkpt']
 
-class Disassembler:
+
+class Disassembler(object):
+    """
+    This class disassembles SMD ROM code using Capstone engine
+    """
+
     def __init__(self, context):
         self.context = context
         self.md = Cs(CS_ARCH_M68K, CS_MODE_BIG_ENDIAN|CS_MODE_M68K_000)
@@ -41,6 +52,7 @@ class Disassembler:
         """
         Push new discovered node to discovered nodes list
         """
+
         dest_raw = [x.strip() for x in instr.op_str.split(',')][-1]
         if dest_raw[0] == '$':
             try:
@@ -60,6 +72,7 @@ class Disassembler:
         """
         Check if the addr falls in a node that's already been disassembled
         """
+
         for start, _dict in self.disas_nodes.items():
             if addr >= start and addr < _dict['end']:
                 return True
@@ -70,6 +83,7 @@ class Disassembler:
         """
         Disassembles data beginning at the specified start offset
         """
+
         self.disas_nodes[start] = dict()
         self.disas_nodes[start]['instrs'] = []
 
@@ -91,10 +105,18 @@ class Disassembler:
 
         self.disas_nodes[start]['end'] = instr.address + instr.size
 
+    def disassemble_at(self, offset):
+      """
+      Disassemble code at specified offset
+      """
+
+      self.disassemble_data(offset)
+
     def disassemble_all(self):
         """
         Dissassemble all discovered code in the ROM
         """
+
         self.disassemble_data(self.context['ProgramStart'], name='ProgramStart')
         for key, value in self.context['VectorTable'].items():
             self.disassemble_data(value, name=key)
@@ -120,6 +142,7 @@ class Disassembler:
         """
         Print disassembled code to terminal
         """
+
         ordered_nodes = OrderedDict(sorted(self.disas_nodes.items()))
         last_node_end = None
         for start in ordered_nodes:

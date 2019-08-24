@@ -1,4 +1,4 @@
-#/usr/bin/python3
+#!/usr/bin/python3
 
 import argparse
 import binascii
@@ -16,6 +16,7 @@ def parse_args():
     """
     Parse command line arguments
     """
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-D', '--disassemble-all', action='store_true',
         help='Display assembler contents of all discovered executable code')
@@ -31,6 +32,7 @@ def cmd_display_header(context):
     """
     Display the ROM header
     """
+
     print('\nROM Header:')
     for name, value in context['Header'].items():
         line = "  {}".format(name)
@@ -50,6 +52,7 @@ def cmd_disassemble_all(context):
     """
     Disassemble and display discovered ROM code
     """
+
     disas = Disassembler(context)
     disas.disassemble_all()
     disas.display()
@@ -59,21 +62,25 @@ def cmd_disassemble_at(context, offset):
     Disassemble and display code at the specified offset
     """
 
+    disas = Disassembler(context)
+    disas.disassemble_at(offset)
+    disas.display()
+
 def main():
     """
     Main routine of the application
     """
+
     args = parse_args()
     data = args.file.read()
     context = SMDLoader.load(data)
 
     if args.disassemble_all:
         cmd_disassemble_all(context)
-        return 0
-
-    if args.header:
+    elif args.disassemble_at:
+        cmd_disassemble_at(context, args.disassemble_at)
+    elif args.header:
         cmd_display_header(context)
-        return 0
 
 if __name__ == '__main__':
     main()

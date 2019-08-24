@@ -1,16 +1,17 @@
-"""
-Collection of static classes that represent SEGA Megadrive structures
-"""
-
 import struct
 from collections import namedtuple
 
 class SMDVector(object):
+    """
+    This class is used to parse the SMD ROM vector table
+    """
+
     @staticmethod
     def unpack(data):
         """
         Unpack SEGA Megadrive vector table structure
         """
+
         fmt = ">IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
         Names= namedtuple(
             'Names',
@@ -39,12 +40,18 @@ class SMDVector(object):
 
         return Names._asdict(Names._make(struct.unpack(fmt, data)))
 
+
 class SMDHeader(object):
+    """
+    This class is used to parse the SMD ROM header
+    """
+
     @staticmethod
     def unpack(data):
         """
         Unpack SEGA Megadrive ROM header structure
         """
+
         fmt = ">16s16s48s48s14sH16sIIII12s52s16s"
         Names = namedtuple(
             'Names', 'ConsoleName Copyright DomesticName ' \
